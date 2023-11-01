@@ -2,13 +2,7 @@
 A minimal tool for build web-page easier using Rust
 
 # Install
-
-Uppercase:
-Minimal = "0.1.5"
-
-
-Lowercase: 
-minimal = { package = "Minimal", version = "0.1.5" }
+minimal_web = "0.1.0"
 
 # Usage/Examples
 
