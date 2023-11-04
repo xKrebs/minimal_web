@@ -1,6 +1,6 @@
 [package]
 name = "minimal_web"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "A minimal tool for build web-page easier using Rust"
 license = "MIT OR Apache-2.0"

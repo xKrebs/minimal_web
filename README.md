@@ -1,8 +1,38 @@
-# minimal
+# Minimal
 A minimal tool for build web-page easier using Rust
 
-# Install
-minimal_web = "0.1.0"
+# Features
+I started to built this library not just for classic call such as query_selector, document etc.
+
+What are the features of minimal?
+
+- Shorter call for some function
+- Easier way for closure
+- More readable exceptions
+- Animation (soon)
+and more...
+
+Version 0.1.1 implement
+
+-> custom_expect for Option<T> and Result<T> (Build your own custom error message)
+-> macros for closure :
+    FunMut!(EventType, function) -> mutable closure
+    Fun!(EventType, function) -> classic closure
+
+    ```Rust
+    let onclick = Fun!(Event, move |e|{
+        gloo::console::log!("Hi, nice to meet you");
+    });
+    document().query_selector_html("button").set_onclick(onclick.as_ref().dyn_ref());
+
+    ///Instead of
+    let onclick = Closure::<dyn FnMut(Event)>::new(move |e|{
+        gloo::console::log!("Hi, nice to meet you");
+    });
+    document().query_selector_html("button").set_onclick(onclick.as_ref().dyn_ref());
+    ```
+# What's next version ?
+Some animations built by me in rust that you can use directly with minimal_web !
 
 # Usage/Examples
 

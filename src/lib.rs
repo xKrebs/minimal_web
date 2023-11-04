@@ -29,10 +29,29 @@ pub mod utils {
         #[wasm_bindgen(structural, method, getter)]
         fn stack(error: &Error) -> String;
     }
-    //custom error
+    /// Throw exception on Option<T> with your custom error message.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let document = document();
+    /// let element = document.query_selector(".container").custom_expect("Failed, no element!");
+    ///
+    /// assert_eq!("Failed, no element!", element);
+    /// ```
     pub trait OptionExt<T> {
         fn custom_expect(self, msg: String) -> T;
     }
+    /// Throw exception on Result<T> with your custom error message.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let document = document();
+    /// let element = document.query_selector(".container").custom_expect("Failed, no element!");
+    ///
+    /// assert_eq!("Failed, no element!", element);
+    /// ```
     pub trait ResultExt<T, E> {
         fn custom_expect(self, msg: String) -> T;
     }
@@ -65,13 +84,62 @@ pub mod utils {
             }
         }
     }
+
+    /// Easier way for create a mutable closure.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let onclick = FunMut!(Event, move |e|{
+    ///     gloo::console::log!("Hi, nice to meet you");
+    /// });
+    /// document().query_selector_html("button").set_onclick(onclick.as_ref().dyn_ref());
+    ///
+    /// ```
+    /// 
+    #[macro_export]
+    macro_rules! FunMut {
+        ($e:ty, $body:expr) => { // rule that accepts any kind of tokens (letters, punctuation, etc)
+            Closure::<dyn FnMut($e)>::new($body)
+        };
+    }
+    /// Easier way for create a closure.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let onclick = Fun!(Event, move |e|{
+    ///     gloo::console::log!("Hi, nice to meet you");
+    /// });
+    /// document().query_selector_html("button").set_onclick(onclick.as_ref().dyn_ref());
+    ///
+    /// ```
+    /// 
+    #[macro_export]
+    macro_rules! Fun {
+        ($e:ty, $body:expr) => { // rule that accepts any kind of tokens (letters, punctuation, etc)
+            Closure::<dyn Fn($e)>::new($body)
+        };
+    }
+    #[macro_export]
+    macro_rules! SetFunMut {
+        ($e:ty, $body:expr) => { // rule that accepts any kind of tokens (letters, punctuation, etc)
+            Closure::<dyn FnMut($e)>::new($body).as_ref().dyn_ref()
+        };
+    }
+    #[macro_export]
+    macro_rules! SetFun {
+        ($e:ty, $body:expr) => { // rule that accepts any kind of tokens (letters, punctuation, etc)
+            Closure::<dyn Fn($e)>::new($body).as_ref().dyn_ref()
+        };
+    }
     
     /// Create a Window.
     ///
     /// # Examples
     ///
     /// ```
-    /// let window = Minimal::window();
+    /// let window = window();
     ///
     /// assert_eq!(<Window>, window);
     /// ```
@@ -86,7 +154,7 @@ pub mod utils {
     /// # Examples
     ///
     /// ```
-    /// let document = Minimal::document();
+    /// let document = document();
     ///
     /// assert_eq!(<Document>, document);
     ///
@@ -100,7 +168,7 @@ pub mod utils {
     /// # Examples
     ///
     /// ```
-    /// let window = Minimal::window();
+    /// let window = window();
     /// let document = window.document_page();
     ///
     /// assert_eq!(<Document>, document);
@@ -143,7 +211,7 @@ pub mod utils {
     /// # Examples
     ///
     /// ```
-    /// let window = Minimal::window();
+    /// let window = window();
     /// let document = window.document_page();
     /// let h1_el = document.query_selector_el("h1");
     /// let h1_html = document.query_selector_html("h1");
@@ -197,7 +265,7 @@ pub mod utils {
     /// # Examples
     ///
     /// ```
-    /// let document = Minimal::document();
+    /// let document = document();
     /// let h1_el = document.query_selector_el("h1");
     /// assert_eq!(<Element>, h1_el);
     /// assert_eq!(<HtmlElement>, h1_el.to_html());
@@ -289,7 +357,7 @@ pub mod utils {
     /// # Examples
     ///
     /// ```
-    /// let document = Minimal::document();
+    /// let document = document();
     /// let h1_html = document.query_selector_html("h1");
     /// if h1_html.has_class("test"){
     ///     h1_html.set_prop("display", "none");
@@ -320,7 +388,7 @@ pub mod utils {
     /// # Examples
     ///
     /// ```
-    /// let document = Minimal::document();
+    /// let document = document();
     /// let h1_list = document.query_selector_list("h1");
     /// assert_eq!(<NodeList>, h1_list);
     /// let element = h1_list.get_html(5);
@@ -345,7 +413,7 @@ pub mod utils {
     /// # Examples
     ///
     /// ```
-    /// let document = Minimal::document();
+    /// let document = document();
     /// let h1 = document.query_selector_list("h1");
     /// let first_child_html = h1.get_node(0).to_html();
     /// assert_eq!(<HtmlElement>, first_child_html);
