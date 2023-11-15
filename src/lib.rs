@@ -1,6 +1,5 @@
 //! # minimal
-//! `minimal` is a collection of utilities to get Element and HtmlElement
-//!  more convenient and easier.
+//! `minimal` is a tool for build web-page easier using Rust.
 
 pub use utils::document;
 pub use utils::window;
@@ -98,7 +97,7 @@ pub mod utils {
     /// ```
     /// 
     #[macro_export]
-    macro_rules! FunMut {
+    macro_rules! fnmut {
         ($e:ty, $body:expr) => { // rule that accepts any kind of tokens (letters, punctuation, etc)
             Closure::<dyn FnMut($e)>::new($body)
         };
@@ -116,21 +115,9 @@ pub mod utils {
     /// ```
     /// 
     #[macro_export]
-    macro_rules! Fun {
+    macro_rules! fnv {
         ($e:ty, $body:expr) => { // rule that accepts any kind of tokens (letters, punctuation, etc)
             Closure::<dyn Fn($e)>::new($body)
-        };
-    }
-    #[macro_export]
-    macro_rules! SetFunMut {
-        ($e:ty, $body:expr) => { // rule that accepts any kind of tokens (letters, punctuation, etc)
-            Closure::<dyn FnMut($e)>::new($body).as_ref().dyn_ref()
-        };
-    }
-    #[macro_export]
-    macro_rules! SetFun {
-        ($e:ty, $body:expr) => { // rule that accepts any kind of tokens (letters, punctuation, etc)
-            Closure::<dyn Fn($e)>::new($body).as_ref().dyn_ref()
         };
     }
     
@@ -163,7 +150,7 @@ pub mod utils {
         web_sys::window().expect("no window found").document_page()
     }
 
-    /// Some function for a Window element.
+    /// Some Function for a Window element.
     ///
     /// # Examples
     ///
@@ -186,27 +173,27 @@ pub mod utils {
         fn get_width(&self) -> f64;
         /// Get height of window, same as inner_height()
         fn get_height(&self) -> f64;
-        /// Get name of window, same as name() function.
+        /// Get name of window, same as name() Function.
         fn get_name(&self) -> String;
-        /// Get scroll_x of window, same as scroll_x() function.
+        /// Get scroll_x of window, same as scroll_x() Function.
         fn get_scroll_x(&self) -> f64;
-        /// Get scroll_y of window, same as scroll_y() function.
+        /// Get scroll_y of window, same as scroll_y() Function.
         fn get_scroll_y(&self) -> f64;
-        /// Get page_x_offset of window, same as page_x_offset() function.
+        /// Get page_x_offset of window, same as page_x_offset() Function.
         fn get_page_x_offset(&self) -> f64;
-        /// Get page_y_offset of window, same as page_y_offset() function.
+        /// Get page_y_offset of window, same as page_y_offset() Function.
         fn get_page_y_offset(&self) -> f64;
-        /// Get screen_x of window, same as screen_x() function.
+        /// Get screen_x of window, same as screen_x() Function.
         fn get_screen_x(&self) -> JsValue;
-        /// Get screen_y of window, same as screen_y() function.
+        /// Get screen_y of window, same as screen_y() Function.
         fn get_screen_y(&self) -> JsValue;
-        /// Get outer_width of window, same as outer_width() function.
+        /// Get outer_width of window, same as outer_width() Function.
         fn get_outer_width(&self) -> JsValue;
-        /// Get outer_height of window, same as outer_height() function.
+        /// Get outer_height of window, same as outer_height() Function.
         fn get_outer_height(&self) -> JsValue;
     }
 
-    /// Some function for a Document element.
+    /// Some Function for a Document element.
     ///
     /// # Examples
     ///
@@ -260,7 +247,7 @@ pub mod utils {
         fn create_html_ns(&self, namespace: &str, qualified_name: &str) -> HtmlElement;
     }
 
-    /// Some function for a Element element.
+    /// Some Function for a Element element.
     ///
     /// # Examples
     ///
@@ -330,6 +317,8 @@ pub mod utils {
         fn closest_el(&self, value: &str) -> Element;
         /// Get closest element as HtmlElement.
         fn closest_html(&self, value: &str) -> HtmlElement;
+        /// Set attribute of Element.
+        fn set_attr(&self, name: &str, value: &str);
         /// Get attribute of Element.
         fn get_attr(&self, value: &str) -> String;
         /// Get attribute node of Element.
@@ -352,7 +341,7 @@ pub mod utils {
         fn app_child(&self, node: Node) -> Node;
     }
 
-    /// Some function for a HtmlElement element.
+    /// Some Function for a HtmlElement element.
     ///
     /// # Examples
     ///
@@ -383,7 +372,7 @@ pub mod utils {
         fn get_css(&self) -> String;
     }
 
-    /// Some function for a NodeList element.
+    /// Some Function for a NodeList element.
     ///
     /// # Examples
     ///
@@ -408,7 +397,7 @@ pub mod utils {
         fn remove_list_class(&self, value: &str);
     }
 
-    /// Some function for a Node element.
+    /// Some Function for a Node element.
     ///
     /// # Examples
     ///
@@ -681,6 +670,9 @@ pub mod utils {
                 .custom_expect("No prev sibling found".to_owned())
                 .to_html()
         }
+        fn set_attr(&self, name: &str, value: &str) {
+            self.set_attribute(name, value).custom_expect("It's not possible set attribute of: ".to_owned() + name.clone() + value.clone())
+        }
         fn get_attr_node(&self, value: &str) -> Attr {
             self.get_attribute_node(value).custom_expect("No attribute node found for : ".to_owned() + value.clone())
         }
@@ -786,5 +778,86 @@ pub mod utils {
         fn to_html(&self) -> HtmlElement {
             self.clone().dyn_into::<HtmlElement>().custom_expect("It's not possible convert a Null Node to HtmlElement".to_owned())
         }
+    }
+}
+pub mod animation{
+    use wasm_bindgen::prelude::*;
+    use yew::prelude::*;
+    use web_sys::HtmlElement;
+    use crate::utils::*;
+    
+    #[hook]
+    pub fn use_parallax() {
+        let document = crate::document();
+        use_effect(move ||{
+            let parallax = crate::fnmut!(MouseEvent, move |e: web_sys::MouseEvent|{
+                let element = e.target().expect("failed").dyn_into::<HtmlElement>().expect("failed to convert");
+                //Check if element exist
+                if element.closest(".parallax-effect").unwrap().is_some() {
+                    //Animation calc
+                    let el_html = element.closest_html(".parallax-effect");
+                    let mut value_max = 2.0;
+                    if el_html.get_attribute("data-max").is_some(){
+                        value_max = el_html.get_attr("data-max").trim().parse::<f64>().expect("error");
+                    } else if el_html.get_attribute("style").is_none(){
+                        el_html.set_css("");
+                    }
+                    let rect = el_html.get_bounding_client_rect();
+                    let width = el_html.offset_width() as f64;
+                    let height = el_html.offset_height() as f64;
+                    let mouse_x = ((e.client_x() as f64) - rect.left()) - (width / 2.0);
+                    let mouse_y = ((e.client_y() as f64) - rect.top()) - (height / 2.0);
+                    let rotate_x = value_max*mouse_y/(height/2.0);
+                    let rotate_y = -value_max*mouse_x/(width/2.0);
+                    //Animate element
+                    el_html
+                    .set_css(&format!("{} transform: perspective(1000px) rotateX({rotate_x}deg) rotateY({rotate_y}deg)", el_html.get_attr("style").trim()));
+                    //Check if glow exist then animate
+                    if el_html.query_selector(".wrapper .glow").unwrap().is_some(){
+                        let glow = el_html.query_selector_html(".glow");
+                        if glow.get_attribute("style").is_none(){
+                            glow.set_css("");
+                        }
+                        glow
+                        .set_css(&format!("{} transform:translate({mouse_x}px,{mouse_y}px); opacity:1;", glow.get_attr("style").trim())); 
+                    }
+                }
+            });
+            let parallax_on_out = crate::fnv!(MouseEvent, move |e: web_sys::MouseEvent|{
+                let element = e.target().expect("failed").dyn_into::<HtmlElement>().expect("failed to convert");
+                //Check if element exist
+                if element.closest(".parallax-effect").unwrap().is_some(){
+                    let el_html = element.closest_html(".parallax-effect");
+                    if el_html.get_attribute("style").is_none(){
+                        el_html.set_css("");
+                    }
+                    //Reset element
+                    el_html
+                    .set_css(&format!("{} transform: perspective(1000px) rotateX(0deg) rotateY(0deg)", el_html.get_attr("style").trim()));
+                    //Check if glow exist then reset animation
+                    if el_html.query_selector(".wrapper .glow").unwrap().is_some(){
+                        let glow = el_html.query_selector_html(".glow");
+                        if glow.get_attribute("style").is_none(){
+                            glow.set_css("");
+                        }
+                        glow
+                        .set_css(&format!("{} transform:translate(0px,0px); opacity:0;", glow.get_attr("style").trim()));
+                    }
+                }
+            });
+            if Some(document.query_selector_list(".parallax-effect")).is_some(){
+                let all_element = document.query_selector_list(".parallax-effect");
+                for i in 0..all_element.length() {
+                    let element = all_element.get_html(i);
+                    element.set_onmousemove(parallax.as_ref().dyn_ref());
+                    element.set_onmouseleave(parallax_on_out.as_ref().dyn_ref());
+                }
+            }
+
+            || {
+                parallax.forget();
+                parallax_on_out.forget();
+            }
+        });
     }
 }

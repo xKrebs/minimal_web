@@ -12,25 +12,32 @@ What are the features of minimal?
 - Animation (soon)
 and more...
 
-Version 0.1.1 implement
+Version 0.1.2 implement
 
--> custom_expect for Option<T> and Result<T> (Build your own custom error message)
--> macros for closure :
-    FunMut!(EventType, function) -> mutable closure
-    Fun!(EventType, function) -> classic closure
+- syntax change for macros : from Fun! to fnv! (function void) and from FunMut! to fnmut (function mut)
+- Parallax animation
 
-    ```Rust
-    let onclick = Fun!(Event, move |e|{
-        gloo::console::log!("Hi, nice to meet you");
-    });
-    document().query_selector_html("button").set_onclick(onclick.as_ref().dyn_ref());
-
-    ///Instead of
-    let onclick = Closure::<dyn FnMut(Event)>::new(move |e|{
-        gloo::console::log!("Hi, nice to meet you");
-    });
-    document().query_selector_html("button").set_onclick(onclick.as_ref().dyn_ref());
-    ```
+```
+(RUST)
+use minimal_web::{animation::use_parallax, *};
+fn main(){
+    use_parallax();
+    html!{
+        <div class="parallax-effect" data-max="10">
+        // max value is 2 but you can change it with data-max, the value is the max of parallax effect when you over
+        ...
+        </div>
+    }
+}
+...
+You can also build your own glow with this syntax
+<div class="parallax-effect">
+    ...
+    <div class="wrapper"> <- a wrapper of parent (with same parent dimension)
+        <div class="glow"></div>
+    </div>
+</div>
+```
 # What's next version ?
 Some animations built by me in rust that you can use directly with minimal_web !
 
